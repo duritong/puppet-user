@@ -4,7 +4,7 @@
 
 modules_dir { "user": }
 
-class ssh {
+class user {
 
 }
 
