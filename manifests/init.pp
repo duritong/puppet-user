@@ -34,7 +34,7 @@ define user::define_user(
 
 	user { $name:
 		allowdupe => false,
-                comment => "$real_name_comment"
+                comment => "$real_name_comment",
                 ensure => present,
                 gid => $gid,
 		home => $real_home_dir,
