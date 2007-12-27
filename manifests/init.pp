@@ -48,11 +48,10 @@ define user::define_user(
 		gid => $gid
 	}
 
-	file {
-		"$real_home_dir":
+	file {$real_home_dir:
   			ensure => directory,
 			mode => 0750, owner => $name, group => $name;
 	}
 
-	ssh::deploy_auth_key($name: source => $real_ssh_key)
+	ssh::deploy_auth_key{$name: source => $real_ssh_key}
 }
