@@ -38,7 +38,10 @@ define user::define_user(
                 ensure => present,
                 gid => $gid,
 		home => $real_home_dir,
-		shell => "/bin/bash",
+		shell => $operatingsystem ? {
+			openbsd => "/usr/local/bin/bash",
+			default => "/bin/bash",
+		}
 		uid => $uid
 	}
 
