@@ -41,8 +41,8 @@ define user::define_user(
 		shell => $operatingsystem ? {
 			openbsd => "/usr/local/bin/bash",
 			default => "/bin/bash",
-		}
-		uid => $uid
+		},
+		uid => $uid,
 	}
 
 	group { $name:
