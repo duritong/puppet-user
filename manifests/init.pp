@@ -58,9 +58,9 @@ define user::define_user(
 	}
 
 	case $ssh_key {
-		'': {},
+		'': {}
 		default: {
 			ssh::deploy_auth_key{"user_sshkey_${name}": source => $real_ssh_key, user => $name, target_dir => '', group => $name}
-		},
+		}
 	}
 }
