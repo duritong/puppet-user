@@ -15,6 +15,7 @@ define user::define_user(
 	$gid,
 	$home_dir = '',
 	$ssh_key = ''
+	$shell = ''
 	){
 
 	$real_ssh_key = $ssh_key ? {
@@ -32,16 +33,21 @@ define user::define_user(
 		default => $name_comment,	
 	}
 
+	$real_shell = $shell ? {
+		'' =>  $operatingsystem ? {
+                       	  openbsd => "/usr/local/bin/bash",
+                          default => "/bin/bash",
+                	},
+		default => $shell,
+	}
+
 	user { $name:
 		allowdupe => false,
                 comment => "$real_name_comment",
                 ensure => present,
                 gid => $gid,
 		home => $real_home_dir,
-		shell => $operatingsystem ? {
-			openbsd => "/usr/local/bin/bash",
-			default => "/bin/bash",
-		},
+		shell => $real_shell,
 		uid => $uid,
 	}
 
