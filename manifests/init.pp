@@ -14,7 +14,7 @@ define user::define_user(
 	$uid,
 	$gid,
 	$home_dir = '',
-	$ssh_key = ''
+	$ssh_key = '',
 	$shell = ''
 	){
 
