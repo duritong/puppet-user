@@ -18,11 +18,6 @@ define user::define_user(
 	$shell = ''
 	){
 
-	$real_ssh_key = $ssh_key ? {
-		'' => $name,
-		default => $ssh_key,
-	}
-	
 	$real_home_dir = $home_dir ? {
 		'' => "/home/$name",
 		default => $home_dir
@@ -62,5 +57,10 @@ define user::define_user(
 			mode => 0750, owner => $name, group => $name;
 	}
 
-	ssh::deploy_auth_key{"user_sshkey_${name}": source => $real_ssh_key, user => $name, target_dir => '', group => $name}
+	case $ssh_key {
+		'' => {},
+		default => {
+			ssh::deploy_auth_key{"user_sshkey_${name}": source => $real_ssh_key, user => $name, target_dir => '', group => $name}
+		},
+	}
 }
