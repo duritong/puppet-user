@@ -59,7 +59,7 @@ define user::define_user(
 
 	file {$real_home_dir:
   			ensure => directory,
-			mode => 0750, owner => $name, group => $name;
+			mode => 0750, owner => $name, group => $gid;
 	}
 
 	case $ssh_key {
