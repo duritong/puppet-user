@@ -11,6 +11,7 @@ class user {
 
 define user::define_user(
 	$name,
+	$name_comment,
 	$uid,
 	$gid,
 	$home_dir = '',
