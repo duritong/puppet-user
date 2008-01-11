@@ -2,7 +2,7 @@
 # Copyright (C) 2007 admin@immerda.ch
 #
 
-modules_dir { "user": }
+#modules_dir { "user": }
 
 class user {
 
