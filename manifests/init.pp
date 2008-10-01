@@ -4,11 +4,11 @@
 
 #modules_dir { "user": }
 
-class user {
-
-}
+class user {}
 
 
+# ssh:_key have to be handed over as the classname
+# containing the ssh_keys
 define user::define_user(
 	$name,
 	$name_comment = '',
@@ -66,7 +66,7 @@ define user::define_user(
 	case $ssh_key {
 		'': {}
 		default: {
-			sshd::deploy_auth_key{"user_sshkey_${name}": source => $ssh_key, user => $name, target_dir => '', group => $name}
+			include $ssh_key
 		}
 	}
 }
