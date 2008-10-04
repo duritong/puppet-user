@@ -8,7 +8,7 @@ class user::openbsd::defaults {
         uid => '0', 
         gid => '0', 
         home_dir => '/root/', 
-        home_dir_mode = '0700', 
+        home_dir_mode => '0700', 
     }
 }
 
