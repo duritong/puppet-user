@@ -15,6 +15,7 @@ define user::define_user(
 	$uid,
 	$gid,
 	$home_dir = '',
+    $home_dir_mode = '0750',
 	$ssh_key = '',
 	$shell = ''
 	){
@@ -60,7 +61,7 @@ define user::define_user(
 
 	file {$real_home_dir:
   			ensure => directory,
-			mode => 0750, owner => $name, group => $gid;
+			mode => $home_dir_mode, owner => $name, group => $gid;
 	}
 
 	case $ssh_key {
