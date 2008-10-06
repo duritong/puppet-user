@@ -45,7 +45,6 @@ define user::define_user(
         managehome => true,
         shell => $real_shell,
         uid => $uid,
-        before => Class[$ssh_key],
     }
 
     case $name {
@@ -63,6 +62,9 @@ define user::define_user(
 	case $ssh_key {
 		'': {}
 		default: {
+            User[$name]{
+                before => Class[$ssh_key],
+            }
 			include $ssh_key
 		}
 	}
