@@ -54,7 +54,6 @@ define user::define_user(
  			    allowdupe => false,
 			    ensure => present,
 			    gid => $gid,
-                require => User[$name],
             }
         }
     }
