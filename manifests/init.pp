@@ -2,11 +2,6 @@
 # Copyright (C) 2007 admin@immerda.ch
 #
 
-#modules_dir { "user": }
-
-class user {}
-
-
 # ssh:_key have to be handed over as the classname
 # containing the ssh_keys
 define user::define_user(
