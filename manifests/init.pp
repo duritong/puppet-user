@@ -8,6 +8,8 @@ define user::define_user(
     $name_comment = '',
     $uid,
     $gid,
+    $groups = undef,
+    $membership = 'minimum',
     $home_dir = '',
     $home_dir_mode = '0750',
     $ssh_key = '',
@@ -40,6 +42,8 @@ define user::define_user(
         managehome => true,
         shell => $real_shell,
         uid => $uid,
+        groups => $groups,
+        membership => $membership,
     }
 
     case $name {
