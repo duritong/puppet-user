@@ -121,7 +121,7 @@ define user::sftp_only(
 ) {
     include user::groups::sftponly
     user::define_user{"${name}":
-        name_comment => "SFTP-only user: ${name}",
+        name_comment => "SFTP-only_user_${name}",
         groups => [ 'sftponly' ],        
         managehome => 'false',        
         shell => $operatingsystem ? {
