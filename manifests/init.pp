@@ -107,13 +107,13 @@ define user::define_user(
         }
     }
 
-	case $ssh_key {
-		'': {}
+	case $sshkey {
+		'absent': { info("no sshkey to manage for user $name") }
 		default: {
             User[$name]{
-                before => Class[$ssh_key],
+                before => Class[$sshkey],
             }
-			include $ssh_key
+			include $sshkey
 		}
 	}
 }
