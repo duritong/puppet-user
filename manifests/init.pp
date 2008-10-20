@@ -8,7 +8,7 @@ define user::define_user(
     $name_comment = '',
     $uid,
     $gid,
-    $groups = undef,
+    $groups = [],
     $membership = 'minimum',
     $home_dir = '',
     $home_dir_mode = '0750',
