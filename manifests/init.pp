@@ -58,7 +58,7 @@ define user::define_user(
    file{"$real_homedir":
         ensure => directory,
         require => User[$name],
-        owner => $name, group => $name, mode => $homedir_mode;
+        owner => $name, mode => $homedir_mode;
     } 
 
     case $uid {
@@ -99,7 +99,11 @@ define user::define_user(
     }
 
     case $gid {
-        'absent': { info("no gid defined for user $name") }
+        'absent': { 
+            File[$real_homedir]{
+                group => $name,
+            }
+        }
         default: { 
             File[$real_homedir]{
                 group => $gid,
