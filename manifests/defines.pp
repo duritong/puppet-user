@@ -44,11 +44,28 @@ define user::define_user(
         membership => $membership,
     }
 
-   file{"$real_homedir":
-        ensure => directory,
-        require => User[$name],
-        owner => $name, mode => $homedir_mode;
-    } 
+    
+    case $managehome {
+        'true': {
+            file{"$real_homedir":
+                ensure => directory,
+                require => User[$name],
+                owner => $name, mode => $homedir_mode;
+            } 
+            case $gid {
+                'absent': { 
+                    File[$real_homedir]{
+                        group => $name,
+                    }
+                }
+                default: { 
+                    File[$real_homedir]{
+                        group => $gid,
+                    }
+                }
+            }
+        }
+    }
 
     case $uid {
         'absent': { info("Not defining a uid for user $name") }
@@ -87,19 +104,6 @@ define user::define_user(
 	    }
     }
 
-    case $gid {
-        'absent': { 
-            File[$real_homedir]{
-                group => $name,
-            }
-        }
-        default: { 
-            File[$real_homedir]{
-                group => $gid,
-            }
-        }
-    }
-
 	case $sshkey {
 		'absent': { info("no sshkey to manage for user $name") }
 		default: {
@@ -116,4 +120,15 @@ define user::sftp_only(
 
 ) {
     include user::groups::sftponly
+    user::define_user{"${name}":
+        name_comment => "SFTP-only user: ${name}",
+        groups => [ 'sftponly' ],        
+        managehome => 'false',        
+        shell => $operatingsystem ? {
+            debian => '/usr/sbin/nologin',
+            ubuntu => '/usr/sbin/nologin',
+            default => '/sbin/nologin'
+        },
+        require => Group['sftponly'],
+    }
 }
