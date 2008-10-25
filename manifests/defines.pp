@@ -1,7 +1,18 @@
 # manifests/defines.pp
 
-# ssh:_key have to be handed over as the classname
-# containing the ssh_keys
+# sshkey:           have to be handed over as the classname
+#                   containing the ssh_keys
+# password:         the password in cleartext or as crypted string
+#                   which should be set. Default: absent -> no password is set.
+#                   Note: On OpenBSD systems we can only manage plain text passwords.
+#                         Therefor the password_crypted option doesn't have any effect.
+#                         As well we can only set the password if a user doesn't yet have 
+#                         set a password. So if the user will change it, the plain password
+#                         will be useless.
+# password_crypted: if the supplied password is crypted or not. 
+#                   Default: true
+#                   Note: If you'd like to use unencrypted passwords, you have to set a variable
+#                         $password_salt to an 8 character long salt, being used for the password.  
 define user::define_user(
 	$name_comment = 'absent',
 	$uid = 'absent',
@@ -12,6 +23,8 @@ define user::define_user(
     $managehome = 'true',
     $homedir_mode = '0750',
 	$sshkey = 'absent',
+    $password = 'absent',
+    $password_crypted = 'true',
 	$shell = 'absent'
 ){
 
@@ -118,11 +131,27 @@ define user::define_user(
         'absent': { info("not managing the password for user $name") }
         default: {
             case $operatingsystem {
-                openbsd: { info("we can't manage passwords on ${operatingsystem} systems -> we ignore it.") }        
+                openbsd: { 
+                    exec { "setpass $name":
+                        onlyif => "grep '^$name:\*' /etc/master.passwd",
+                        command => "usermod -p '$password' $name",
+                        require => User[$name],
+                    }   
+                }
                 default: {
                     include ruby-libshadow
+                    if $password_crypted {
+                        $real_password = $password
+                    } else {
+                        case $password_salt {
+                            '': { fail("To use unencrypted passwords you have to define a variable \$password_salt to an 8 character salt for passwords!") }
+                            default: {
+                                $real_password = mkpasswd($password,$password_salt)
+                            }
+                        }
+                    }
                     User[$name]{
-                        password => $password,
+                        password => $real_password,
                         require => Package['ruby-libshadow'],
                     }
                 }
@@ -133,7 +162,8 @@ define user::define_user(
 
 
 define user::sftp_only(
-    $password = 'absent'
+    $password = 'absent',
+    $password_crypted = 'true'
 ) {
     include user::groups::sftponly
     user::define_user{"${name}":
@@ -146,6 +176,7 @@ define user::sftp_only(
             default => '/sbin/nologin'
         },
         password => $password,
+        password_crypted => $password_crypted,
         require => Group['sftponly'],
     }
 }
