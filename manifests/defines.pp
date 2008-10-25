@@ -4,6 +4,8 @@
 #                   containing the ssh_keys
 # password:         the password in cleartext or as crypted string
 #                   which should be set. Default: absent -> no password is set.
+#                   To create an encrypted password, you can use:
+#                   /usr/bin/mkpasswd -H md5 -S $salt $password
 #                   Note: On OpenBSD systems we can only manage plain text passwords.
 #                         Therefor the password_crypted option doesn't have any effect.
 #                         As well we can only set the password if a user doesn't yet have 
