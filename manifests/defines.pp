@@ -113,11 +113,27 @@ define user::define_user(
 			include $sshkey
 		}
 	}
+
+    case $password {
+        'absent': { info("not managing the password for user $name") }
+        default: {
+            case $operatingsystem {
+                openbsd: { info("we can't manage passwords on ${operatingsystem} systems -> we ignore it.") }        
+                default: {
+                    include ruby-libshadow
+                    User[$name]{
+                        password => $password,
+                        require => Package['ruby-libshadow'],
+                    }
+                }
+            }
+        }
+    }
 }
 
 
 define user::sftp_only(
-
+    $password = 'absent'
 ) {
     include user::groups::sftponly
     user::define_user{"${name}":
@@ -129,6 +145,7 @@ define user::sftp_only(
             ubuntu => '/usr/sbin/nologin',
             default => '/sbin/nologin'
         },
+        password => $password,
         require => Group['sftponly'],
     }
 }
