@@ -135,7 +135,7 @@ define user::define_user(
             case $operatingsystem {
                 openbsd: { 
                     exec { "setpass $name":
-                        onlyif => "grep '^$name:\*' /etc/master.passwd",
+                        onlyif => "grep '^$name:\\*:' /etc/master.passwd",
                         command => "usermod -p '$password' $name",
                         require => User[$name],
                     }   
@@ -164,6 +164,8 @@ define user::define_user(
 
 
 define user::sftp_only(
+    $managehome = 'false',
+    $homedir_mode = '0750',
     $password = 'absent',
     $password_crypted = 'true'
 ) {
@@ -171,7 +173,8 @@ define user::sftp_only(
     user::define_user{"${name}":
         name_comment => "SFTP-only_user_${name}",
         groups => [ 'sftponly' ],        
-        managehome => 'false',        
+        managehome => $managehome,
+        homedir_mode => $homedir_mode,
         shell => $operatingsystem ? {
             debian => '/usr/sbin/nologin',
             ubuntu => '/usr/sbin/nologin',
