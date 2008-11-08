@@ -6,11 +6,10 @@
 #                   which should be set. Default: absent -> no password is set.
 #                   To create an encrypted password, you can use:
 #                   /usr/bin/mkpasswd -H md5 -S $salt $password
-#                   Note: On OpenBSD systems we can only manage plain text passwords.
+#                   Note: On OpenBSD systems we can only manage crypted passwords.
 #                         Therefor the password_crypted option doesn't have any effect.
-#                         As well we can only set the password if a user doesn't yet have 
-#                         set a password. So if the user will change it, the plain password
-#                         will be useless.
+#                         You'll find a python script in ${module}/password/openbsd/genpwd.py
+#                         Which will help you to create such a password
 # password_crypted: if the supplied password is crypted or not. 
 #                   Default: true
 #                   Note: If you'd like to use unencrypted passwords, you have to set a variable
@@ -135,7 +134,7 @@ define user::define_user(
             case $operatingsystem {
                 openbsd: { 
                     exec { "setpass ${name}":
-                        onlyif => "grep -q '^${name}:\\**:' /etc/master.passwd",
+                        unless => "grep -q '^${name}:${password}:' /etc/master.passwd",
                         command => "usermod -p '${password}' ${name}",
                         require => User["${name}"],
                     }   
