@@ -134,10 +134,10 @@ define user::define_user(
         default: {
             case $operatingsystem {
                 openbsd: { 
-                    exec { "setpass $name":
-                        onlyif => "grep '^$name:\\*:' /etc/master.passwd",
-                        command => "usermod -p '$password' $name",
-                        require => User[$name],
+                    exec { "setpass ${name}":
+                        onlyif => "grep -q '^${name}:\\**:' /etc/master.passwd",
+                        command => "usermod -p '${password}' ${name}",
+                        require => User["${name}"],
                     }   
                 }
                 default: {
