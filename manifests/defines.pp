@@ -164,12 +164,16 @@ define user::define_user(
 
 define user::sftp_only(
     $managehome = 'false',
+    $uid = 'absent',
+    $gid = 'absent',
     $homedir_mode = '0750',
     $password = 'absent',
     $password_crypted = 'true'
 ) {
     include user::groups::sftponly
     user::define_user{"${name}":
+        uid => $uid,
+        gid => $gid,
         name_comment => "SFTP-only_user_${name}",
         groups => [ 'sftponly' ],        
         managehome => $managehome,
