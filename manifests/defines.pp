@@ -14,6 +14,10 @@
 #                   Default: true
 #                   Note: If you'd like to use unencrypted passwords, you have to set a variable
 #                         $password_salt to an 8 character long salt, being used for the password.  
+# gid:              define the gid of the group
+#                   absent: let the system take a gid (*default*)
+#                   uid: take the same as the uid has if it isn't absent
+#                   <value>: take this gid
 define user::define_user(
 	$name_comment = 'absent',
 	$uid = 'absent',
@@ -93,8 +97,23 @@ define user::define_user(
     case $gid {
         'absent': { info("Not defining a gid for user $name") }
         default: {
-            User[$name]{
-                gid => $gid,
+            case $gid {
+                'uid': {
+                    case $uid {
+                        'absent': { info("Not defining a gid for user $name as uid is absent") }
+                        default: {
+                            $real_gid = $uid
+                        }
+                    }
+                }
+                default: {
+                    $real_gid = $gid
+                }
+            }
+            if $real_gid {
+                User[$name]{
+                    gid => $real_gid,
+                }
             }
         }
     }
@@ -162,10 +181,11 @@ define user::define_user(
 }
 
 
+# gid:  by default it will take the same as the uid
 define user::sftp_only(
     $managehome = 'false',
     $uid = 'absent',
-    $gid = 'absent',
+    $gid = 'uid',
     $homedir_mode = '0750',
     $password = 'absent',
     $password_crypted = 'true'
