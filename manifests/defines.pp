@@ -60,6 +60,7 @@ define user::define_user(
         shell => $real_shell,
         groups => $groups,
         membership => $membership,
+        require => Group[$name],
     }
 
     
@@ -124,7 +125,6 @@ define user::define_user(
 			group { $name:
  				allowdupe => false,
 				ensure => present,
-                require => User[$name],
 			}
             if $real_gid {
                 Group[$name]{
