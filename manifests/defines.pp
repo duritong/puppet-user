@@ -128,7 +128,7 @@ define user::define_user(
 			}
             if $real_gid {
                 Group[$name]{
-                    gid => $gid,
+                    gid => $real_gid,
                 }
             }
 	    }
