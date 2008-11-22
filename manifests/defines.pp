@@ -60,7 +60,6 @@ define user::define_user(
         shell => $real_shell,
         groups => $groups,
         membership => $membership,
-        require => Group[$name],
     }
 
     
@@ -122,6 +121,9 @@ define user::define_user(
 	case $name {
 		root: {}
 		default: {
+            User[$name]{
+                require => Group[$name],
+            }
 			group { $name:
  				allowdupe => false,
 				ensure => present,
