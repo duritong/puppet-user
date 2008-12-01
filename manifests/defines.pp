@@ -18,7 +18,7 @@
 #                   absent: let the system take a gid (*default*)
 #                   uid: take the same as the uid has if it isn't absent
 #                   <value>: take this gid
-define user::define_user(
+define user::managed(
 	$name_comment = 'absent',
 	$uid = 'absent',
 	$gid = 'absent',
@@ -190,7 +190,7 @@ define user::sftp_only(
     $password_crypted = 'true'
 ) {
     include user::groups::sftponly
-    user::define_user{"${name}":
+    user::managed{"${name}":
         uid => $uid,
         gid => $gid,
         name_comment => "SFTP-only_user_${name}",

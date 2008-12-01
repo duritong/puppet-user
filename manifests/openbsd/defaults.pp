@@ -2,7 +2,7 @@
 
 class user::openbsd::defaults {
     # we need this somehow to mange it
-    user::define_user{root: 
+    user::managed{root: 
         name => 'root', 
         name_comment => 'Charlie &',
         uid => '0', 
