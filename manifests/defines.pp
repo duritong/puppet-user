@@ -5,7 +5,7 @@
 # password:         the password in cleartext or as crypted string
 #                   which should be set. Default: absent -> no password is set.
 #                   To create an encrypted password, you can use:
-#                   /usr/bin/mkpasswd -H md5 -S $salt $password
+#                   /usr/bin/mkpasswd -H md5 --salt=$salt $password , where $salt is 8 bytes long
 #                   Note: On OpenBSD systems we can only manage crypted passwords.
 #                         Therefor the password_crypted option doesn't have any effect.
 #                         You'll find a python script in ${module}/password/openbsd/genpwd.py
