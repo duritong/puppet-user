@@ -121,9 +121,9 @@ define user::managed(
 	case $name {
 		root: {}
 		default: {
-            User[$name]{
-                require => Group[$name],
-            }
+#            User[$name]{
+#                require => Group[$name],
+#            }
 			group { $name:
  				allowdupe => false,
 				ensure => present,
