@@ -18,11 +18,14 @@
 #                   absent: let the system take a gid (*default*)
 #                   uid: take the same as the uid has if it isn't absent
 #                   <value>: take this gid
+# manage_group:     Wether we should add a group with the same name as well
+#                   Default: true
 define user::managed(
 	$name_comment = 'absent',
 	$uid = 'absent',
 	$gid = 'absent',
     $groups = [],
+    $manage_group = 'true',
     $membership = 'minimum',
 	$homedir = 'absent',
     $managehome = 'true',
@@ -121,16 +124,17 @@ define user::managed(
 	case $name {
 		root: {}
 		default: {
-#            User[$name]{
-#                require => Group[$name],
-#            }
-			group { $name:
- 				allowdupe => false,
-				ensure => present,
-			}
-            if $real_gid {
-                Group[$name]{
-                    gid => $real_gid,
+            case $manage_group {
+                'true': {
+    			    group { $name:
+ 	    	    		allowdupe => false,
+		        		ensure => present,
+	    		    }
+                    if $real_gid {
+                        Group[$name]{
+                            gid => $real_gid,
+                        }
+                    }
                 }
             }
 	    }
