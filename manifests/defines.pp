@@ -25,14 +25,14 @@ define user::managed(
 	$uid = 'absent',
 	$gid = 'uid',
     $groups = [],
-    $manage_group = 'true',
+    $manage_group = true,
     $membership = 'minimum',
 	$homedir = 'absent',
-    $managehome = 'true',
+    $managehome = true,
     $homedir_mode = '0750',
 	$sshkey = 'absent',
     $password = 'absent',
-    $password_crypted = 'true',
+    $password_crypted = true,
 	$shell = 'absent'
 ){
 
@@ -66,23 +66,21 @@ define user::managed(
     }
 
     
-    case $managehome {
-        'true': {
-            file{"$real_homedir":
-                ensure => directory,
-                require => User[$name],
-                owner => $name, mode => $homedir_mode;
-            } 
-            case $gid {
-                'absent','uid': { 
-                    File[$real_homedir]{
-                        group => $name,
-                    }
+    if $managehome {
+        file{"$real_homedir":
+            ensure => directory,
+            require => User[$name],
+            owner => $name, mode => $homedir_mode;
+        } 
+        case $gid {
+            'absent','uid': { 
+                File[$real_homedir]{
+                    group => $name,
                 }
-                default: { 
-                    File[$real_homedir]{
-                        group => $gid,
-                    }
+             }
+             default: { 
+                File[$real_homedir]{
+                    group => $gid,
                 }
             }
         }
@@ -124,16 +122,14 @@ define user::managed(
 	case $name {
 		root: {}
 		default: {
-            case $manage_group {
-                'true': {
-    			    group { $name:
- 	    	    		allowdupe => false,
-		        		ensure => present,
-	    		    }
-                    if $real_gid {
-                        Group[$name]{
-                            gid => $real_gid,
-                        }
+            if $manage_group {
+    		    group { $name:
+ 	    	        allowdupe => false,
+		        	ensure => present,
+	    		}
+                if $real_gid {
+                    Group[$name]{
+                        gid => $real_gid,
                     }
                 }
             }
@@ -186,12 +182,12 @@ define user::managed(
 
 # gid:  by default it will take the same as the uid
 define user::sftp_only(
-    $managehome = 'false',
+    $managehome = false,
     $uid = 'absent',
     $gid = 'uid',
     $homedir_mode = '0750',
     $password = 'absent',
-    $password_crypted = 'true'
+    $password_crypted = true,
 ) {
     include user::groups::sftponly
     user::managed{"${name}":
