@@ -187,7 +187,7 @@ define user::sftp_only(
     $gid = 'uid',
     $homedir_mode = '0750',
     $password = 'absent',
-    $password_crypted = true,
+    $password_crypted = true
 ) {
     include user::groups::sftponly
     user::managed{"${name}":
