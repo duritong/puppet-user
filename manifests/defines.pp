@@ -15,15 +15,15 @@
 #                   Note: If you'd like to use unencrypted passwords, you have to set a variable
 #                         $password_salt to an 8 character long salt, being used for the password.  
 # gid:              define the gid of the group
-#                   absent: let the system take a gid (*default*)
-#                   uid: take the same as the uid has if it isn't absent
+#                   absent: let the system take a gid
+#                   uid: take the same as the uid has if it isn't absent (*default*)
 #                   <value>: take this gid
 # manage_group:     Wether we should add a group with the same name as well
 #                   Default: true
 define user::managed(
 	$name_comment = 'absent',
 	$uid = 'absent',
-	$gid = 'absent',
+	$gid = 'uid',
     $groups = [],
     $manage_group = 'true',
     $membership = 'minimum',
