@@ -119,21 +119,21 @@ define user::managed(
         }
     }
 
-	case $name {
-		root: {}
-		default: {
+    case $name {
+        root: {}
+        default: {
             if $manage_group {
-    		    group { $name:
- 	    	        allowdupe => false,
-		        	ensure => present,
-	    		}
+                group { $name:
+                    allowdupe => false,
+                    ensure => present,
+                }
                 if $real_gid {
                     Group[$name]{
                         gid => $real_gid,
                     }
                 }
             }
-	    }
+        }
     }
 
 	case $sshkey {
