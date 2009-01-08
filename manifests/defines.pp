@@ -18,7 +18,8 @@
 #                   absent: let the system take a gid
 #                   uid: take the same as the uid has if it isn't absent (*default*)
 #                   <value>: take this gid
-# manage_group:     Wether we should add a group with the same name as well
+# manage_group:     Wether we should add a group with the same name as well, this works only
+#                   if you supply a uid.
 #                   Default: true
 define user::managed(
 	$name_comment = 'absent',
@@ -122,14 +123,19 @@ define user::managed(
     case $name {
         root: {}
         default: {
-            if $manage_group {
-                group { $name:
-                    allowdupe => false,
-                    ensure => present,
-                }
-                if $real_gid {
-                    Group[$name]{
-                        gid => $real_gid,
+            case $uid {
+                'absent': { info("can not manage group for $name as no uid is supplied") }
+                default: {
+                    if $manage_group {
+                        group { $name:
+                            allowdupe => false,
+                            ensure => present,
+                        }
+                        if $real_gid {
+                            Group[$name]{
+                                gid => $real_gid,
+                            }
+                        }
                     }
                 }
             }
