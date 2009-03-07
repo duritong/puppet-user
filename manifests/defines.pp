@@ -98,6 +98,7 @@ define user::managed(
                   }
               }
           }
+      }
     }
 
     case $uid {
