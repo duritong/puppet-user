@@ -22,19 +22,20 @@
 #                   if you supply a uid.
 #                   Default: true
 define user::managed(
-	$name_comment = 'absent',
-	$uid = 'absent',
-	$gid = 'uid',
+    $ensure = present,
+    $name_comment = 'absent',
+    $uid = 'absent',
+    $gid = 'uid',
     $groups = [],
     $manage_group = true,
     $membership = 'minimum',
-	$homedir = 'absent',
+    $homedir = 'absent',
     $managehome = true,
     $homedir_mode = '0750',
-	$sshkey = 'absent',
+    $sshkey = 'absent',
     $password = 'absent',
     $password_crypted = true,
-	$shell = 'absent'
+    $shell = 'absent'
 ){
 
     $real_homedir = $homedir ? {
@@ -56,6 +57,7 @@ define user::managed(
     }
 
     user { $name:
+        ensure => $ensure,
         allowdupe => false,
         comment => "$real_name_comment",
         ensure => present,
@@ -68,23 +70,34 @@ define user::managed(
 
     
     if $managehome {
-        file{"$real_homedir":
-            ensure => directory,
-            require => User[$name],
-            owner => $name, mode => $homedir_mode;
-        } 
-        case $gid {
-            'absent','uid': { 
-                File[$real_homedir]{
-                    group => $name,
-                }
-             }
-             default: { 
-                File[$real_homedir]{
-                    group => $gid,
-                }
+        case $ensure {
+          absent: {
+            file{"$real_homedir":
+              ensure => absent,
+              purge => true,
+              force => true,
+              recurese => true,
             }
-        }
+          }
+          default: {
+              file{"$real_homedir":
+                  ensure => directory,
+                  require => User[$name],
+                  owner => $name, mode => $homedir_mode;
+              }
+              case $gid {
+                  'absent','uid': {
+                      File[$real_homedir]{
+                          group => $name,
+                      }
+                   }
+                   default: {
+                      File[$real_homedir]{
+                          group => $gid,
+                      }
+                  }
+              }
+          }
     }
 
     case $uid {
@@ -129,7 +142,7 @@ define user::managed(
                     if $manage_group {
                         group { $name:
                             allowdupe => false,
-                            ensure => present,
+                            ensure => $ensure,
                         }
                         if $real_gid {
                             Group[$name]{
@@ -142,42 +155,46 @@ define user::managed(
         }
     }
 
-	case $sshkey {
-		'absent': { info("no sshkey to manage for user $name") }
-		default: {
-            User[$name]{
-                before => Class[$sshkey],
-            }
-			include $sshkey
-		}
-	}
-
-    case $password {
-        'absent': { info("not managing the password for user $name") }
-        default: {
-            case $operatingsystem {
-                openbsd: { 
-                    exec { "setpass ${name}":
-                        unless => "grep -q '^${name}:${password}:' /etc/master.passwd",
-                        command => "usermod -p '${password}' ${name}",
-                        require => User["${name}"],
-                    }   
-                }
+    case $ensure {
+        present: {
+            case $sshkey {
+                'absent': { info("no sshkey to manage for user $name") }
                 default: {
-                    include ruby-libshadow
-                    if $password_crypted {
-                        $real_password = $password
-                    } else {
-                        case $password_salt {
-                            '': { fail("To use unencrypted passwords you have to define a variable \$password_salt to an 8 character salt for passwords!") }
-                            default: {
-                                $real_password = mkpasswd($password,$password_salt)
+                    User[$name]{
+                        before => Class[$sshkey],
+                    }
+                    include $sshkey
+                }
+            }
+
+            case $password {
+                'absent': { info("not managing the password for user $name") }
+                default: {
+                    case $operatingsystem {
+                        openbsd: {
+                            exec { "setpass ${name}":
+                                unless => "grep -q '^${name}:${password}:' /etc/master.passwd",
+                                command => "usermod -p '${password}' ${name}",
+                                require => User["${name}"],
                             }
                         }
-                    }
-                    User[$name]{
-                        password => $real_password,
-                        require => Package['ruby-libshadow'],
+                        default: {
+                            include ruby-libshadow
+                            if $password_crypted {
+                                $real_password = $password
+                            } else {
+                                case $password_salt {
+                                    '': { fail("To use unencrypted passwords you have to define a variable \$password_salt to an 8 character salt for passwords!") }
+                                    default: {
+                                        $real_password = mkpasswd($password,$password_salt)
+                                    }
+                                }
+                            }
+                            User[$name]{
+                                password => $real_password,
+                                require => Package['ruby-libshadow'],
+                            }
+                        }
                     }
                 }
             }
@@ -185,9 +202,9 @@ define user::managed(
     }
 }
 
-
 # gid:  by default it will take the same as the uid
 define user::sftp_only(
+    $ensure = present,
     $managehome = false,
     $uid = 'absent',
     $gid = 'uid',
@@ -197,6 +214,7 @@ define user::sftp_only(
 ) {
     include user::groups::sftponly
     user::managed{"${name}":
+        ensure => present,
         uid => $uid,
         gid => $gid,
         name_comment => "SFTP-only_user_${name}",
