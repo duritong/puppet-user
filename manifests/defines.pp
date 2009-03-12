@@ -60,7 +60,6 @@ define user::managed(
         ensure => $ensure,
         allowdupe => false,
         comment => "$real_name_comment",
-        ensure => present,
         home => $real_homedir,
         managehome => $managehome,
         shell => $real_shell,
@@ -215,7 +214,7 @@ define user::sftp_only(
 ) {
     include user::groups::sftponly
     user::managed{"${name}":
-        ensure => present,
+        ensure => $ensure,
         uid => $uid,
         gid => $gid,
         name_comment => "SFTP-only_user_${name}",
