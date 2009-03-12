@@ -69,131 +69,111 @@ define user::managed(
 
     
     if $managehome {
-        case $ensure {
-          absent: {
+        if $ensure == 'absent' {
             file{"$real_homedir":
-              ensure => absent,
-              purge => true,
-              force => true,
-              recurese => true,
+                ensure => absent,
+                purge => true,
+                force => true,
+                recurese => true,
             }
-          }
-          default: {
-              file{"$real_homedir":
-                  ensure => directory,
-                  require => User[$name],
-                  owner => $name, mode => $homedir_mode;
-              }
-              case $gid {
-                  'absent','uid': {
-                      File[$real_homedir]{
-                          group => $name,
-                      }
-                   }
-                   default: {
-                      File[$real_homedir]{
-                          group => $gid,
-                      }
-                  }
-              }
-          }
-      }
-    }
-
-    case $uid {
-        'absent': { info("Not defining a uid for user $name") }
-        default: {
-            User[$name]{
-                uid => $uid,
+        } else {
+            file{"$real_homedir":
+                ensure => directory,
+                require => User[$name],
+                owner => $name, mode => $homedir_mode;
             }
-        }
-    }
-
-    case $gid {
-        'absent': { info("Not defining a gid for user $name") }
-        default: {
             case $gid {
-                'uid': {
-                    case $uid {
-                        'absent': { info("Not defining a gid for user $name as uid is absent") }
-                        default: {
-                            $real_gid = $uid
-                        }
+                'absent','uid': {
+                    File[$real_homedir]{
+                        group => $name,
                     }
                 }
                 default: {
-                    $real_gid = $gid
-                }
-            }
-            if $real_gid {
-                User[$name]{
-                    gid => $real_gid,
+                    File[$real_homedir]{
+                        group => $gid,
+                    }
                 }
             }
         }
     }
 
-    case $name {
-        root: {}
-        default: {
-            case $uid {
-                'absent': { info("can not manage group for $name as no uid is supplied") }
-                default: {
-                    if $manage_group {
-                        group { $name:
-                            allowdupe => false,
-                            ensure => $ensure,
-                        }
-                        if $real_gid {
-                            Group[$name]{
-                                gid => $real_gid,
-                            }
-                        }
+    if $uid != 'absent' {
+        User[$name]{
+            uid => $uid,
+        }
+    }
+
+    if $gid != 'absent' {
+        if $gid != 'uid' {
+            if $uid != 'absent' {
+                $real_gid = $uid
+            }
+        } else {
+            $real_gid = $gid
+        }
+        if $real_gid {
+            User[$name]{
+                gid => $real_gid,
+            }
+        }
+    }
+
+    if $name != 'root' {
+        if $uid == 'absent' {
+            if $manage_group {
+                if $ensure == 'absent' {
+                    group{$name:
+                        ensure => absent,
                     }
                 }
             }
+        } else {
+            if $manage_group {
+                group { $name:
+                    allowdupe => false,
+                    ensure => $ensure,
+                }
+                if $real_gid {
+                    Group[$name]{
+                        gid => $real_gid,
+                    }
+                }
+            } 
         }
     }
 
     case $ensure {
         present: {
-            case $sshkey {
-                'absent': { info("no sshkey to manage for user $name") }
-                default: {
-                    User[$name]{
-                        before => Class[$sshkey],
-                    }
-                    include $sshkey
+            if $sshkey != 'absent' {
+                User[$name]{
+                    before => Class[$sshkey],
                 }
+                include $sshkey
             }
 
-            case $password {
-                'absent': { info("not managing the password for user $name") }
-                default: {
-                    case $operatingsystem {
-                        openbsd: {
-                            exec { "setpass ${name}":
-                                unless => "grep -q '^${name}:${password}:' /etc/master.passwd",
-                                command => "usermod -p '${password}' ${name}",
-                                require => User["${name}"],
+            if $password != 'absent' {
+                case $operatingsystem {
+                    openbsd: {
+                        exec { "setpass ${name}":
+                            unless => "grep -q '^${name}:${password}:' /etc/master.passwd",
+                            command => "usermod -p '${password}' ${name}",
+                            require => User["${name}"],
+                        }
+                    }
+                    default: {
+                        include ruby-libshadow
+                        if $password_crypted {
+                            $real_password = $password
+                        } else {
+                            if $password_salt {
+                                $real_password = mkpasswd($password,$password_salt)
+                            } else {
+                                fail("To use unencrypted passwords you have to define a variable \$password_salt to an 8 character salt for passwords!")
                             }
                         }
-                        default: {
-                            include ruby-libshadow
-                            if $password_crypted {
-                                $real_password = $password
-                            } else {
-                                case $password_salt {
-                                    '': { fail("To use unencrypted passwords you have to define a variable \$password_salt to an 8 character salt for passwords!") }
-                                    default: {
-                                        $real_password = mkpasswd($password,$password_salt)
-                                    }
-                                }
-                            }
-                            User[$name]{
-                                password => $real_password,
-                                require => Package['ruby-libshadow'],
-                            }
+                        User[$name]{
+                            password => $real_password,
+                            require => Package['ruby-libshadow'],
                         }
                     }
                 }
