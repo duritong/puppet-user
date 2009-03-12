@@ -104,7 +104,7 @@ define user::managed(
     }
 
     if $gid != 'absent' {
-        if $gid != 'uid' {
+        if $gid == 'uid' {
             if $uid != 'absent' {
                 $real_gid = $uid
             }
@@ -120,11 +120,9 @@ define user::managed(
 
     if $name != 'root' {
         if $uid == 'absent' {
-            if $manage_group {
-                if $ensure == 'absent' {
-                    group{$name:
-                        ensure => absent,
-                    }
+            if $manage_group and ($ensure == 'absent') {
+                group{$name:
+                    ensure => absent,
                 }
             }
         } else {
