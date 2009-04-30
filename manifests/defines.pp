@@ -56,7 +56,10 @@ define user::managed(
         default => $shell,
     }
 
-    if strlength($name) > 32 {
+    if ($kernel == 'OpenBSD') and (strlength($name) > 31) {
+      fail("Usernames can't be longer than 31 characters. ${name} is too long!")
+    }
+    if ($kernel == 'Linux') and (strlength($name) > 32) {
       fail("Usernames can't be longer than 32 characters. ${name} is too long!")
     }
 
