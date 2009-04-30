@@ -56,6 +56,10 @@ define user::managed(
         default => $shell,
     }
 
+    if strlength($name) > 32 {
+      fail("Usernames can't be longer than 32 characters. ${name} is too long!")
+    }
+
     user { $name:
         ensure => $ensure,
         allowdupe => false,
