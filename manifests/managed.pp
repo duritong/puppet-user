@@ -10,10 +10,10 @@
 #                         Therefor the password_crypted option doesn't have any effect.
 #                         You'll find a python script in ${module}/password/openbsd/genpwd.py
 #                         Which will help you to create such a password
-# password_crypted: if the supplied password is crypted or not. 
+# password_crypted: if the supplied password is crypted or not.
 #                   Default: true
 #                   Note: If you'd like to use unencrypted passwords, you have to set a variable
-#                         $password_salt to an 8 character long salt, being used for the password.  
+#                         $password_salt to an 8 character long salt, being used for the password.
 # gid:              define the gid of the group
 #                   absent: let the system take a gid
 #                   uid: take the same as the uid has if it isn't absent (*default*)
@@ -74,7 +74,7 @@ define user::managed(
         membership => $membership,
     }
 
-    
+
     if $managehome {
         if $ensure == 'absent' {
             file{"$real_homedir":
@@ -108,9 +108,7 @@ define user::managed(
         User[$name]{
             uid => $uid,
         }
-    }
-
-    if $gid != 'absent' {
+f $gid != 'absent' {
         if $gid == 'uid' {
             if $uid != 'absent' {
                 $real_gid = $uid
@@ -147,10 +145,9 @@ define user::managed(
                         gid => $real_gid,
                     }
                 }
-            } 
+            }
         }
     }
-
     case $ensure {
         present: {
             if $sshkey != 'absent' {
@@ -188,35 +185,5 @@ define user::managed(
                 }
             }
         }
-    }
-}
-
-# gid:  by default it will take the same as the uid
-define user::sftp_only(
-    $ensure = present,
-    $managehome = false,
-    $uid = 'absent',
-    $gid = 'uid',
-    $homedir_mode = '0750',
-    $password = 'absent',
-    $password_crypted = true
-) {
-    include user::groups::sftponly
-    user::managed{"${name}":
-        ensure => $ensure,
-        uid => $uid,
-        gid => $gid,
-        name_comment => "SFTP-only_user_${name}",
-        groups => [ 'sftponly' ],        
-        managehome => $managehome,
-        homedir_mode => $homedir_mode,
-        shell => $operatingsystem ? {
-            debian => '/usr/sbin/nologin',
-            ubuntu => '/usr/sbin/nologin',
-            default => '/sbin/nologin'
-        },
-        password => $password,
-        password_crypted => $password_crypted,
-        require => Group['sftponly'],
     }
 }
