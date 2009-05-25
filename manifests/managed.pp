@@ -108,7 +108,9 @@ define user::managed(
         User[$name]{
             uid => $uid,
         }
-f $gid != 'absent' {
+    }
+
+    if $gid != 'absent' {
         if $gid == 'uid' {
             if $uid != 'absent' {
                 $real_gid = $uid
