@@ -128,12 +128,8 @@ define user::managed(
     if $name != 'root' {
         if $uid == 'absent' {
             if $manage_group and ($ensure == 'absent') {
-              case $operatingsystem {
-                'OpenBSD': {
-                  group{$name:
-                    ensure => absent,
-                  }
-                }
+              group{$name:
+                ensure => absent,
               }
             }
         } else {
