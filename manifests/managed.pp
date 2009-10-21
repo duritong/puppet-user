@@ -127,6 +127,7 @@ define user::managed(
             if $manage_group and ($ensure == 'absent') {
               group{$name:
                 ensure => absent,
+                require => User[$name],
               }
             }
         } else {
