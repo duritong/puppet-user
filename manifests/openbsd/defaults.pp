@@ -7,7 +7,7 @@ class user::openbsd::defaults {
         name_comment => 'Charlie &',
         uid => '0', 
         gid => '0', 
-        homedir => '/root/', 
+        homedir => '/root', 
         homedir_mode => '0700', 
     }
 }
