@@ -78,7 +78,7 @@ define user::managed(
                 ensure => absent,
                 purge => true,
                 force => true,
-                recurese => true,
+                recurse => true,
             }
         } else {
             file{"$real_homedir":
