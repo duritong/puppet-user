@@ -127,7 +127,18 @@ define user::managed(
             if $manage_group and ($ensure == 'absent') {
               group{$name:
                 ensure => absent,
-                require => User[$name],
+              }
+              case $operatingsystem {
+                OpenBSD: {
+                  Group[$name]{
+                    before => User[$name],
+                  }
+                }
+                default: {
+                  Group[$name]{
+                    require => User[$name],
+                  }
+                }
               }
             }
         } else {
