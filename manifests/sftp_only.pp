@@ -4,6 +4,7 @@ define user::sftp_only(
     $managehome = false,
     $uid = 'absent',
     $gid = 'uid',
+    $homedir = 'absent',
     $homedir_mode = '0750',
     $password = 'absent',
     $password_crypted = true
@@ -16,6 +17,7 @@ define user::sftp_only(
         name_comment => "SFTP-only_user_${name}",
         groups => [ 'sftponly' ],
         managehome => $managehome,
+        homedir => $homedir,
         homedir_mode => $homedir_mode,
         shell => $operatingsystem ? {
             debian => '/usr/sbin/nologin',
