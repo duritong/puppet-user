@@ -145,7 +145,6 @@ define user::managed(
             if $manage_group {
                 group { $name:
                     allowdupe => false,
-                    before => User[$name],
                     ensure => $ensure,
                 }
                 if $real_gid {
@@ -166,6 +165,10 @@ define user::managed(
                       }
                     }
                   }
+                } else {
+                   Group[$name]{
+                     before => User[$name],
+                   }
                 }
             }
         }
