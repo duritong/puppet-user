@@ -153,6 +153,20 @@ define user::managed(
                         gid => $real_gid,
                     }
                 }
+                if $ensure == 'absent' {
+                  case $operatingsystem {
+                    OpenBSD: {
+                      Group[$name]{
+                        before => User[$name],
+                      }
+                    }
+                    default: {
+                      Group[$name]{
+                        require => User[$name],
+                      }
+                    }
+                  }
+                }
             }
         }
     }
