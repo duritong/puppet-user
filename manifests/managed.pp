@@ -192,7 +192,7 @@ define user::managed(
                         }
                     }
                     default: {
-                        require ruby::libshadow
+                        require ruby::shadow
                         if $password_crypted {
                             $real_password = $password
                         } else {
