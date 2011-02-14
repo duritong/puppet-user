@@ -85,7 +85,7 @@ define user::managed(
             File[$real_homedir]{
                 ensure => directory,
                 require => User[$name],
-                owner => $name, mode => $homedir_mode;
+                owner => $name, mode => $homedir_mode,
             }
             case $gid {
                 'absent','uid': {
