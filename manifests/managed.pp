@@ -73,15 +73,16 @@ define user::managed(
 
 
     if $managehome {
+        file{$real_homedir: }
         if $ensure == 'absent' {
-            file{"$real_homedir":
+            File[$real_homedir]{
                 ensure => absent,
                 purge => true,
                 force => true,
                 recurse => true,
             }
         } else {
-            file{"$real_homedir":
+            File[$real_homedir]{
                 ensure => directory,
                 require => User[$name],
                 owner => $name, mode => $homedir_mode;
