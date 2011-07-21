@@ -15,8 +15,7 @@ define user::groups::manage_user(
     }
     if ($ensure == 'present'){
         Augeas["manage_${real_user}_in_group_${group}"]{
-            changes => [ "ins user after ${group}/*[self::gid or self::user][last()]",
-                         "set ${group}/user[last()] ${real_user}" ],
+            changes => [ "set ${group}/user[last()+1] ${real_user}" ],
             onlyif => "match ${group}/*[../user='${real_user}'] size == 0"
         }
     } else {
