@@ -56,7 +56,7 @@ define user::managed(
         default => $shell,
     }
 
-    if strlength($name) > 31 {
+    if size($name) > 31 {
       fail("Usernames can't be longer than 31 characters. ${name} is too long!")
     }
 
