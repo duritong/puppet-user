@@ -35,6 +35,7 @@ define user::managed(
     $sshkey = 'absent',
     $password = 'absent',
     $password_crypted = true,
+    $allowdupe => false,
     $shell = 'absent'
 ){
 
@@ -62,7 +63,7 @@ define user::managed(
 
     user { $name:
         ensure => $ensure,
-        allowdupe => false,
+        allowdupe => $allowdupe,
         comment => "$real_name_comment",
         home => $real_homedir,
         managehome => $managehome,
