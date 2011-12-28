@@ -35,7 +35,7 @@ define user::managed(
     $sshkey = 'absent',
     $password = 'absent',
     $password_crypted = true,
-    $allowdupe => false,
+    $allowdupe = false,
     $shell = 'absent'
 ){
 
