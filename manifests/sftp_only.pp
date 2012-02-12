@@ -9,7 +9,7 @@ define user::sftp_only(
     $password = 'absent',
     $password_crypted = true
 ) {
-    include user::groups::sftponly
+    require user::groups::sftponly
     user::managed{"${name}":
         ensure => $ensure,
         uid => $uid,
@@ -25,7 +25,6 @@ define user::sftp_only(
             default => '/sbin/nologin'
         },
         password => $password,
-        password_crypted => $password_crypted,
-        require => Group['sftponly'],
+        password_crypted => $password_crypted;
     }
 }
