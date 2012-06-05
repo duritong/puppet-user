@@ -22,194 +22,194 @@
 #                   if you supply a uid.
 #                   Default: true
 define user::managed(
-    $ensure = present,
-    $name_comment = 'absent',
-    $uid = 'absent',
-    $gid = 'uid',
-    $groups = [],
-    $manage_group = true,
-    $membership = 'minimum',
-    $homedir = 'absent',
-    $managehome = true,
-    $homedir_mode = '0750',
-    $sshkey = 'absent',
-    $password = 'absent',
-    $password_crypted = true,
-    $allowdupe = false,
-    $shell = 'absent'
+  $ensure = present,
+  $name_comment = 'absent',
+  $uid = 'absent',
+  $gid = 'uid',
+  $groups = [],
+  $manage_group = true,
+  $membership = 'minimum',
+  $homedir = 'absent',
+  $managehome = true,
+  $homedir_mode = '0750',
+  $sshkey = 'absent',
+  $password = 'absent',
+  $password_crypted = true,
+  $allowdupe = false,
+  $shell = 'absent'
 ){
 
-    $real_homedir = $homedir ? {
-        'absent' => "/home/$name",
-        default => $homedir
-    }
+  $real_homedir = $homedir ? {
+    'absent' => "/home/$name",
+    default => $homedir
+  }
 
-    $real_name_comment = $name_comment ? {
-        'absent' => $name,
-        default => $name_comment,
-    }
+  $real_name_comment = $name_comment ? {
+    'absent' => $name,
+    default => $name_comment,
+  }
 
-    $real_shell = $shell ? {
-        'absent' =>  $operatingsystem ? {
-                          openbsd => "/usr/local/bin/bash",
-                          default => "/bin/bash",
-                    },
-        default => $shell,
-    }
+  $real_shell = $shell ? {
+    'absent' =>  $::operatingsystem ? {
+      openbsd => "/usr/local/bin/bash",
+      default => "/bin/bash",
+    },
+    default => $shell,
+  }
 
-    if size($name) > 31 {
-      fail("Usernames can't be longer than 31 characters. ${name} is too long!")
-    }
+  if size($name) > 31 {
+    fail("Usernames can't be longer than 31 characters. ${name} is too long!")
+  }
 
-    user { $name:
-        ensure => $ensure,
-        allowdupe => $allowdupe,
-        comment => "$real_name_comment",
-        home => $real_homedir,
-        managehome => $managehome,
-        shell => $real_shell,
-        groups => $groups,
-        membership => $membership,
-    }
+  user { $name:
+    ensure => $ensure,
+    allowdupe => $allowdupe,
+    comment => "$real_name_comment",
+    home => $real_homedir,
+    managehome => $managehome,
+    shell => $real_shell,
+    groups => $groups,
+    membership => $membership,
+  }
 
 
-    if $managehome {
-        file{$real_homedir: }
-        if $ensure == 'absent' {
-            File[$real_homedir]{
-                ensure => absent,
-                purge => true,
-                force => true,
-                recurse => true,
-            }
-        } else {
-            File[$real_homedir]{
-                ensure => directory,
-                require => User[$name],
-                owner => $name, mode => $homedir_mode,
-            }
-            case $gid {
-                'absent','uid': {
-                    File[$real_homedir]{
-                        group => $name,
-                    }
-                }
-                default: {
-                    File[$real_homedir]{
-                        group => $gid,
-                    }
-                }
-            }
+  if $managehome {
+    file{$real_homedir: }
+    if $ensure == 'absent' {
+      File[$real_homedir]{
+        ensure => absent,
+        purge => true,
+        force => true,
+        recurse => true,
+      }
+    } else {
+      File[$real_homedir]{
+        ensure => directory,
+        require => User[$name],
+        owner => $name, mode => $homedir_mode,
+      }
+      case $gid {
+        'absent','uid': {
+          File[$real_homedir]{
+            group => $name,
+          }
         }
-    }
-
-    if $uid != 'absent' {
-        User[$name]{
-            uid => $uid,
+        default: {
+          File[$real_homedir]{
+            group => $gid,
+          }
         }
+      }
     }
+  }
 
-    if $gid != 'absent' {
-        if $gid == 'uid' {
-            if $uid != 'absent' {
-                $real_gid = $uid
+  if $uid != 'absent' {
+    User[$name]{
+      uid => $uid,
+    }
+  }
+
+  if $gid != 'absent' {
+    if $gid == 'uid' {
+      if $uid != 'absent' {
+        $real_gid = $uid
+      }
+    } else {
+      $real_gid = $gid
+    }
+    if $real_gid {
+      User[$name]{
+        gid => $real_gid,
+      }
+    }
+  }
+
+  if $name != 'root' {
+    if $uid == 'absent' {
+      if $manage_group and ($ensure == 'absent') {
+        group{$name:
+          ensure => absent,
+        }
+        case $::operatingsystem {
+          OpenBSD: {
+            Group[$name]{
+              before => User[$name],
             }
-        } else {
-            $real_gid = $gid
+          }
+          default: {
+            Group[$name]{
+              require => User[$name],
+            }
+          }
+        }
+      }
+    } else {
+      if $manage_group {
+        group { $name:
+          allowdupe => false,
+          ensure => $ensure,
         }
         if $real_gid {
-            User[$name]{
-                gid => $real_gid,
-            }
+          Group[$name]{
+            gid => $real_gid,
+          }
         }
-    }
-
-    if $name != 'root' {
-        if $uid == 'absent' {
-            if $manage_group and ($ensure == 'absent') {
-              group{$name:
-                ensure => absent,
-              }
-              case $operatingsystem {
-                OpenBSD: {
-                  Group[$name]{
-                    before => User[$name],
-                  }
-                }
-                default: {
-                  Group[$name]{
-                    require => User[$name],
-                  }
-                }
+        if $ensure == 'absent' {
+          case $::operatingsystem {
+            OpenBSD: {
+              Group[$name]{
+                before => User[$name],
               }
             }
+            default: {
+              Group[$name]{
+                require => User[$name],
+              }
+            }
+          }
         } else {
-            if $manage_group {
-                group { $name:
-                    allowdupe => false,
-                    ensure => $ensure,
-                }
-                if $real_gid {
-                    Group[$name]{
-                        gid => $real_gid,
-                    }
-                }
-                if $ensure == 'absent' {
-                  case $operatingsystem {
-                    OpenBSD: {
-                      Group[$name]{
-                        before => User[$name],
-                      }
-                    }
-                    default: {
-                      Group[$name]{
-                        require => User[$name],
-                      }
-                    }
-                  }
-                } else {
-                   Group[$name]{
-                     before => User[$name],
-                   }
-                }
-            }
+          Group[$name]{
+            before => User[$name],
+          }
         }
+      }
     }
-    case $ensure {
-        present: {
-            if $sshkey != 'absent' {
-                User[$name]{
-                    before => Class[$sshkey],
-                }
-                include $sshkey
-            }
+  }
+  case $ensure {
+    present: {
+      if $sshkey != 'absent' {
+        User[$name]{
+          before => Class[$sshkey],
+        }
+        include $sshkey
+      }
 
-            if $password != 'absent' {
-                case $operatingsystem {
-                    openbsd: {
-                        exec { "setpass ${name}":
-                            unless => "grep -q '^${name}:${password}:' /etc/master.passwd",
-                            command => "usermod -p '${password}' ${name}",
-                            require => User["${name}"],
-                        }
-                    }
-                    default: {
-                        require ruby::shadow
-                        if $password_crypted {
-                            $real_password = $password
-                        } else {
-                            if $password_salt {
-                                $real_password = mkpasswd($password,$password_salt)
-                            } else {
-                                fail("To use unencrypted passwords you have to define a variable \$password_salt to an 8 character salt for passwords!")
-                            }
-                        }
-                        User[$name]{
-                            password => $real_password,
-                        }
-                    }
-                }
+      if $password != 'absent' {
+        case $::operatingsystem {
+          openbsd: {
+            exec { "setpass ${name}":
+              unless => "grep -q '^${name}:${password}:' /etc/master.passwd",
+              command => "usermod -p '${password}' ${name}",
+              require => User["${name}"],
             }
+          }
+          default: {
+            require ruby::shadow
+            if $password_crypted {
+              $real_password = $password
+            } else {
+              if $password_salt {
+                $real_password = mkpasswd($password,$password_salt)
+              } else {
+                fail("To use unencrypted passwords you have to define a variable \$password_salt to an 8 character salt for passwords!")
+              }
+            }
+            User[$name]{
+              password => $real_password,
+            }
+          }
         }
+      }
     }
+  }
 }
