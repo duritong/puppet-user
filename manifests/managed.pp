@@ -123,6 +123,8 @@ define user::managed(
     if $gid == 'uid' {
       if $uid != 'absent' {
         $real_gid = $uid
+      } else {
+        $real_gid = false
       }
     } else {
       $real_gid = $gid
