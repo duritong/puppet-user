@@ -190,40 +190,34 @@ define user::managed(
       }
     }
   }
-  case $ensure {
-    'present': {
-      if $sshkey != 'absent' {
-        User[$name]{
-          before => Class[$sshkey],
-        }
-        include $sshkey
+  if $ensure == 'present' {
+    if $sshkey != 'absent' {
+      User[$name]{
+        before => Class[$sshkey],
       }
+      include $sshkey
+    }
 
-      if $password != 'absent' {
-        case $::operatingsystem {
-          'OpenBSD': {
-            exec { "setpass ${name}":
-              unless  => "grep -q '^${name}:${password}:' /etc/master.passwd",
-              command => "usermod -p '${password}' ${name}",
-              require => User[$name],
-            }
+    if $password != 'absent' {
+      if $facts['operatingsystem'] == 'OpenBSD' {
+        exec { "setpass ${name}":
+          unless  => "grep -q '^${name}:${password}:' /etc/master.passwd",
+          command => "usermod -p '${password}' ${name}",
+          require => User[$name],
+        }
+      } else {
+        require ::ruby::shadow
+        if $password_crypted {
+          $real_password = $password
+        } else {
+          if $password_salt {
+            $real_password = mkpasswd($password,$password_salt)
+          } else {
+            fail("To use unencrypted passwords for ${name} you have to define a variable \$password_salt to an 8 character salt for passwords!")
           }
-          default: {
-            require ruby::shadow
-            if $password_crypted {
-              $real_password = $password
-            } else {
-              if $password_salt {
-                $real_password = mkpasswd($password,$password_salt)
-              } else {
-                fail("To use unencrypted passwords you have to define a \
-variable \$password_salt to an 8 character salt for passwords!")
-              }
-            }
-            User[$name]{
-              password => $real_password,
-            }
-          }
+        }
+        User[$name]{
+          password => $real_password,
         }
       }
     }
