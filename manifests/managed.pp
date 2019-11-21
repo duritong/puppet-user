@@ -28,7 +28,8 @@
 #                   this works only if you supply a uid.
 #                   Default: true
 define user::managed(
-  $ensure           = present,
+  Enum['present','absent']
+    $ensure         = present,
   $name_comment     = 'absent',
   $uid              = 'absent',
   $gid              = 'uid',
@@ -65,8 +66,8 @@ define user::managed(
     default  => $shell,
   }
 
-  if size($name) > 31 {
-    fail("Usernames can't be longer than 31 characters. ${name} is too long!")
+  if size($name) > 32 {
+    fail("Usernames can't be longer than 32 characters. ${name} is too long!")
   }
 
   user { $name:
