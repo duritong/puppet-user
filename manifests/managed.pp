@@ -135,7 +135,7 @@ define user::managed(
     }
     if $real_gid {
       User[$name]{
-        gid => $real_gid,
+        gid => String($real_gid),
       }
     }
   }
@@ -167,7 +167,7 @@ define user::managed(
         }
         if $real_gid {
           Group[$name]{
-            gid => $real_gid,
+            gid => String($real_gid),
           }
         }
         if $ensure == 'absent' {
