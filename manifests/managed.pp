@@ -207,7 +207,6 @@ define user::managed(
           require => User[$name],
         }
       } else {
-        require ::ruby::shadow
         if $password_crypted {
           $real_password = $password
         } else {
