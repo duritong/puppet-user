@@ -143,10 +143,11 @@ define user::managed (
       # since we calculate the space using the max 65536 subuid space, we have
       # a stable distribution based on the uid/gid of a user
       if 'uids' in $facts['subids'] and !($name in $facts['subids']['uids']) {
+        $subuid_start = String($uid * 65536)
         file_line {
           "${name}_subuid":
             ensure => $ensure,
-            line   => "${name}:${String($uid * 65536)}:65536",
+            line   => "${name}:${subuid_start}:65536",
             path   => '/etc/subuid',
             match  => "^${regexpescape($name)}:",
             before => User[$name];
@@ -154,10 +155,11 @@ define user::managed (
       }
       if $real_gid {
         if 'gids' in $facts['subids'] and !($name in $facts['subids']['gids']) {
+          $subgid_start = String($real_gid * 65536)
           file_line {
             "${name}_subgid":
               ensure => $ensure,
-              line   => "${name}:${String($real_gid * 65536)}:65536",
+              line   => "${name}:${subgid_start}:65536",
               path   => '/etc/subgid',
               match  => "^${regexpescape($name)}:",
               before => User[$name];
