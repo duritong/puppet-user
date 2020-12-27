@@ -27,7 +27,7 @@
 # manage_group:     Wether we should add a group with the same name as well,
 #                   this works only if you supply a uid.
 #                   Default: true
-define user::managed(
+define user::managed (
   Enum['present','absent']
     $ensure         = present,
   $name_comment     = 'absent',
@@ -46,8 +46,7 @@ define user::managed(
   $password_crypted = true,
   $allowdupe        = false,
   $shell            = 'absent'
-){
-
+) {
   $real_homedir = $homedir ? {
     'absent' => "/home/${name}",
     default  => $homedir
@@ -59,10 +58,7 @@ define user::managed(
   }
 
   $real_shell = $shell ? {
-    'absent' =>  $::operatingsystem ? {
-      'openbsd' => '/usr/local/bin/bash',
-      default   => '/bin/bash',
-    },
+    'absent' => '/bin/bash',
     default  => $shell,
   }
 
@@ -87,16 +83,16 @@ define user::managed(
   }
 
   if $managehome {
-    file{$real_homedir: }
+    file { $real_homedir: }
     if $ensure == 'absent' {
-      File[$real_homedir]{
+      File[$real_homedir] {
         ensure  => absent,
         purge   => true,
         force   => true,
         recurse => true,
       }
     } else {
-      File[$real_homedir]{
+      File[$real_homedir] {
         ensure  => directory,
         require => User[$name],
         owner   => $name,
@@ -104,12 +100,12 @@ define user::managed(
       }
       case $gid {
         'absent','uid': {
-          File[$real_homedir]{
+          File[$real_homedir] {
             group => $name,
           }
         }
         default: {
-          File[$real_homedir]{
+          File[$real_homedir] {
             group => $gid,
           }
         }
@@ -118,7 +114,7 @@ define user::managed(
   }
 
   if $uid != 'absent' {
-    User[$name]{
+    User[$name] {
       uid => $uid,
     }
   }
@@ -134,7 +130,7 @@ define user::managed(
       $real_gid = $gid
     }
     if $real_gid {
-      User[$name]{
+      User[$name] {
         gid => String($real_gid),
       }
     }
@@ -143,20 +139,9 @@ define user::managed(
   if $name != 'root' {
     if $uid == 'absent' {
       if $manage_group and ($ensure == 'absent') {
-        group{$name:
-          ensure => absent,
-        }
-        case $::operatingsystem {
-          'OpenBSD': {
-            Group[$name]{
-              before => User[$name],
-            }
-          }
-          default: {
-            Group[$name]{
-              require => User[$name],
-            }
-          }
+        group { $name:
+          ensure  => absent,
+          require => User[$name],
         }
       }
     } else {
@@ -166,25 +151,16 @@ define user::managed(
           allowdupe => false,
         }
         if $real_gid {
-          Group[$name]{
+          Group[$name] {
             gid => String($real_gid),
           }
         }
         if $ensure == 'absent' {
-          case $::operatingsystem {
-            'OpenBSD': {
-              Group[$name]{
-                before => User[$name],
-              }
-            }
-            default: {
-              Group[$name]{
-                require => User[$name],
-              }
-            }
+          Group[$name] {
+            require => User[$name],
           }
         } else {
-          Group[$name]{
+          Group[$name] {
             before => User[$name],
           }
         }
@@ -193,32 +169,24 @@ define user::managed(
   }
   if $ensure == 'present' {
     if $sshkey != 'absent' {
-      User[$name]{
+      User[$name] {
         before => Class[$sshkey],
       }
       include $sshkey
     }
 
     if $password != 'absent' {
-      if $facts['operatingsystem'] == 'OpenBSD' {
-        exec { "setpass ${name}":
-          unless  => "grep -q '^${name}:${password}:' /etc/master.passwd",
-          command => "usermod -p '${password}' ${name}",
-          require => User[$name],
-        }
+      if $password_crypted {
+        $real_password = $password
       } else {
-        if $password_crypted {
-          $real_password = $password
+        if $password_salt {
+          $real_password = mkpasswd($password,$password_salt)
         } else {
-          if $password_salt {
-            $real_password = mkpasswd($password,$password_salt)
-          } else {
-            fail("To use unencrypted passwords for ${name} you have to define a variable \$password_salt to an 8 character salt for passwords!")
-          }
+          fail("To use unencrypted passwords for ${name} you have to define a variable \$password_salt to an 8 character salt for passwords!")
         }
-        User[$name]{
-          password => $real_password,
-        }
+      }
+      User[$name] {
+        password => $real_password,
       }
     }
   }
