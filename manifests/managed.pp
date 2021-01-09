@@ -146,11 +146,11 @@ define user::managed (
         $subuid_start = String($uid * 65536)
         file_line {
           "${name}_subuid":
-            ensure => $ensure,
-            line   => "${name}:${subuid_start}:65536",
-            path   => '/etc/subuid',
-            match  => "^${regexpescape($name)}:",
-            before => User[$name];
+            ensure  => $ensure,
+            line    => "${name}:${subuid_start}:65536",
+            path    => '/etc/subuid',
+            match   => "^${regexpescape($name)}:",
+            require => User[$name];
         }
       }
       if $real_gid {
@@ -158,11 +158,11 @@ define user::managed (
           $subgid_start = String($real_gid * 65536)
           file_line {
             "${name}_subgid":
-              ensure => $ensure,
-              line   => "${name}:${subgid_start}:65536",
-              path   => '/etc/subgid',
-              match  => "^${regexpescape($name)}:",
-              before => User[$name];
+              ensure  => $ensure,
+              line    => "${name}:${subgid_start}:65536",
+              path    => '/etc/subgid',
+              match   => "^${regexpescape($name)}:",
+              require => User[$name];
           } -> Group<| title == $name |>
         }
       }
