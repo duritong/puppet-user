@@ -162,7 +162,6 @@ define user::managed (
               line    => "${name}:${subgid_start}:65536",
               path    => '/etc/subgid',
               match   => "^${regexpescape($name)}:",
-              require => User[$name];
           } -> Group<| title == $name |>
         }
       }
