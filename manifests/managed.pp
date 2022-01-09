@@ -29,7 +29,7 @@
 #                   Default: true
 define user::managed (
   Enum['present','absent']
-    $ensure         = present,
+  $ensure         = present,
   $name_comment     = 'absent',
   $uid              = 'absent',
   $gid              = 'uid',
@@ -158,10 +158,10 @@ define user::managed (
           $subgid_start = String($real_gid * 65536)
           file_line {
             "${name}_subgid":
-              ensure  => $ensure,
-              line    => "${name}:${subgid_start}:65536",
-              path    => '/etc/subgid',
-              match   => "^${regexpescape($name)}:",
+              ensure => $ensure,
+              line   => "${name}:${subgid_start}:65536",
+              path   => '/etc/subgid',
+              match  => "^${regexpescape($name)}:",
           } -> Group<| title == $name |>
         }
       }
