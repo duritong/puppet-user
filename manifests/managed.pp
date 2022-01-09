@@ -80,6 +80,12 @@ define user::managed (
     User[$name] {
       purge_ssh_keys => $purge_ssh_keys,
     }
+  } else {
+    # ensure all remaining processes are killed before removing
+    exec { "pkill -u ${name}":
+      onlyif => "bash -c \"test $(ps -u ${name} | grep -v PID | wc -l) -gt 0\"",
+      before => User[$name],
+    }
   }
 
   if $managehome {
