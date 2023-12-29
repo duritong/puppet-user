@@ -9,12 +9,13 @@ class SubIdsHelper
     end
   end
 end
-['uid','gid'].each do |i|
-  Facter.add("subids.#{i}s") do
-    confine :kernel => 'Linux'
-    confine { File.readable?("/etc/sub#{i}") }
-    setcode do
-      SubIdsHelper.parse("/etc/sub#{i}")
-    end
+Facter.add("subids") do
+  confine :kernel => 'Linux'
+  confine { File.readable?("/etc/subuid") }
+  confine { File.readable?("/etc/subgid") }
+  setcode do
+    Hash[['uid','gid'].collect do |i|
+      ["#{i}s",SubIdsHelper.parse("/etc/sub#{i}")]
+    end]
   end
 end
